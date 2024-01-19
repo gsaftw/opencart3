@@ -12,6 +12,8 @@ class MyParcel_Curl
         }
     }
 
+  
+
     public function getDefaultOptions()
     {
         $curl_version = curl_version();
@@ -56,9 +58,12 @@ class MyParcel_Curl
 
         $this->setOption(CURLOPT_URL, $url);
 
-        if ((ini_get('open_basedir') == '') AND (!ini_get('safe_mode'))) {
-            $this->setOption(CURLOPT_FOLLOWLOCATION, true);
-        }
+
+        // only in use for php 5.4 and lower so no need updated by Vanest ict
+
+        // if ((ini_get('open_basedir') == '') AND (!ini_get('safe_mode'))) {
+        //     $this->setOption(CURLOPT_FOLLOWLOCATION, true);
+        // }
 
         switch ($method) {
             case "PUT":
@@ -88,12 +93,13 @@ class MyParcel_Curl
 
         $this->_curl = curl_init();
 
-        if (!is_resource($this->_curl) || !isset($this->_curl)) {
-            throw new Exception("Unable to create cURL session");
-        }
+        // not excepted anymore php 8 updated by Vanest ict 
 
-        $result_setopt = curl_setopt_array($this->_curl, $this->getOptions());
-        if ($result_setopt !== TRUE) {
+        // if (!is_resource($this->_curl) || !isset($this->_curl)) {
+        //     throw new Exception("Unable to create cURL session");
+        // }
+
+        if (!curl_setopt_array($this->_curl, $this->getOptions())) {
             throw new Exception(curl_error($this->_curl));
         }
 
@@ -104,9 +110,12 @@ class MyParcel_Curl
         $status = $info["http_code"];
         $header = substr($response, 0, $info["header_size"]);
         $body = substr( $response, $info["header_size"]);
-
+           // new statement excepted by php 8 updated by Vanest ict
         if ($raw !== true) {
             $body = json_decode($body, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception("Error decoding JSON: " . json_last_error_msg());
+            }
         }
 
         if ($status > 400) {
